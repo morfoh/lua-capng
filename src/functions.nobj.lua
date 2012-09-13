@@ -48,9 +48,39 @@ c_function "update" {
 	c_call "int" "capng_update" { "capng_act_t", "action", "capng_type_t", "type", "unsigned int", "capability" },
 }
 
--- TODO
---int capng_updatev(capng_act_t action, capng_type_t type,
---                unsigned int capability, ...);
+c_function "updatev" {
+  var_in{ "capng_act_t", "action" },
+  var_in{ "capng_type_t", "type" },
+  var_in{ "unsigned int", "capability" }, -- require atleast one cap.
+  var_out{ "int", "rc" },
+  c_source "pre_src" [[
+  /* define variable in 'pre_src' block */
+  unsigned int cap;
+  int idx;
+]],
+c_source[[
+  /* Lua stack index of first cap */
+  idx = ${capability::idx};
+
+  do {
+      cap = luaL_checkinteger(L, idx);
+      /* stop iterating if the cap is -1 */
+      if (cap == (unsigned)-1) {
+        ${rc} = 0;
+        break;
+      }
+      /* omit invalid cap */
+      if cap_valid(cap)
+        ${rc} = capng_update(${action}, ${type}, cap);
+      idx++;
+  } while(!lua_isnoneornil(L, idx) || ${rc} != 0);
+]],
+--[[
+Don't really need to provide an FFI version of this function there wouldn't be 
+any real performance gain.  If FFI bindings are enabled then this function 
+will still work by using the non-FFI version.
+--]]
+}
 
 --
 -- functions to apply the capabilities previously setup to a process
