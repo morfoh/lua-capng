@@ -1724,6 +1724,39 @@ static int capng__update__func(lua_State *L) {
   return 1;
 }
 
+/* method: updatev */
+static int capng__updatev__func(lua_State *L) {
+  capng_act_t action;
+  capng_type_t type;
+  unsigned int capability;
+  int rc = 0;
+  action = luaL_checkinteger(L,1);
+  type = luaL_checkinteger(L,2);
+  capability = luaL_checkinteger(L,3);
+  /* define variable in 'pre_src' block */
+  unsigned int cap;
+  int idx;
+
+  /* Lua stack index of first cap */
+  idx = 3;
+
+  do {
+      cap = luaL_checkinteger(L, idx);
+      /* stop iterating if the cap is -1 */
+      if (cap == (unsigned)-1) {
+        rc = 0;
+        break;
+      }
+      /* omit invalid cap */
+      if cap_valid(cap)
+        rc = capng_update(action, type, cap);
+      idx++;
+  } while(!lua_isnoneornil(L, idx) || rc != 0);
+
+  lua_pushinteger(L, rc);
+  return 1;
+}
+
 /* method: apply */
 static int capng__apply__func(lua_State *L) {
   capng_select_t set;
@@ -1851,6 +1884,7 @@ static const luaL_reg capng_function[] = {
   {"setpid", capng__setpid__func},
   {"get_caps_process", capng__get_caps_process__func},
   {"update", capng__update__func},
+  {"updatev", capng__updatev__func},
   {"apply", capng__apply__func},
   {"lock", capng__lock__func},
   {"change_id", capng__change_id__func},
