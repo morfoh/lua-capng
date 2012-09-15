@@ -1751,7 +1751,7 @@ static int capng__updatev__func(lua_State *L) {
       if cap_valid(cap)
         rc = capng_update(action, type, cap);
       idx++;
-  } while(!lua_isnoneornil(L, idx) || rc != 0);
+  } while(!lua_isnoneornil(L, idx) && rc == 0);
 
   lua_pushinteger(L, rc);
   return 1;
