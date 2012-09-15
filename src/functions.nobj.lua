@@ -73,7 +73,7 @@ c_source[[
       if cap_valid(cap)
         ${rc} = capng_update(${action}, ${type}, cap);
       idx++;
-  } while(!lua_isnoneornil(L, idx) || ${rc} != 0);
+  } while(!lua_isnoneornil(L, idx) && ${rc} == 0);
 ]],
 --[[
 Don't really need to provide an FFI version of this function there wouldn't be 
